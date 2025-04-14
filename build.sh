@@ -1,1 +1,1 @@
-python3 src/main.py "Sylarphile"
+python3 src/main.py "Static-Site-Generator"
