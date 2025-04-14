@@ -7,7 +7,7 @@ from block_markdown import generate_page_recursive
 def main():
 
     basepath = "/"
-    basepath = sys.argv[1]
+    basepath = f"{sys.argv[1]}/"
 
     dst = "./docs"
     src = "./static"
