@@ -1,19 +1,23 @@
 import os
 import shutil
+import sys
 from static_to_public import copy_to_public
 from block_markdown import generate_page_recursive
 
 def main():
 
-    dst = "./public"
+    basepath = "/"
+    basepath = sys.argv[1]
+
+    dst = "./docs"
     src = "./static"
     content = "./content"
     template = "./template.html"
 
-    print("Deleting public directory...")
+    print("Deleting docs directory...")
     file_list = os.listdir(src)
 
-    if os.path.exists("./public"):
+    if os.path.exists(dst):
         shutil.rmtree(dst)
         os.mkdir(dst)
     else:
@@ -27,6 +31,7 @@ def main():
         content,
         template,
         dst,
+        basepath
     )
         
 main()

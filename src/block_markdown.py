@@ -146,7 +146,7 @@ def extract_title(markdown):
     if headings < 1:
         raise Exception("no heading found in markdown. Did you forget a space after the '#'?")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as f:
         md = f.read()
@@ -156,22 +156,24 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(md)
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html)
+    template = template.replace('href="/', f'href="{basepath}')
+    template = template.replace('src="/', f'src="{basepath}')
     directory = os.path.dirname(dest_path)
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
     with open(dest_path, 'w') as i:
         i.write(template)
 
-def generate_page_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_page_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     contents = os.listdir(dir_path_content)
     for item in contents:
         from_path = os.path.join(dir_path_content, item)
         to_path = os.path.join(dest_dir_path, item)
         if os.path.isfile(from_path) and item.endswith(".md"):
             to_path = Path(to_path).with_suffix(".html")
-            generate_page(from_path, template_path, to_path)
+            generate_page(from_path, template_path, to_path, basepath)
         elif os.path.isdir(from_path):
-            generate_page_recursive(from_path, template_path, to_path)
+            generate_page_recursive(from_path, template_path, to_path, basepath)
 
 
 
