@@ -1,5 +1,6 @@
 from enum import Enum
-import re
+import re, os
+from pathlib import Path
 from htmlnode import HTMLNode, ParentNode
 from textnode import TextNode, TextType, text_to_textnodes, text_node_to_html_node
 
@@ -133,3 +134,44 @@ def quote_to_html_node(block):
     content = " ".join(new_lines)
     children = text_to_children(content)
     return ParentNode("blockquote", children)
+
+def extract_title(markdown):
+    headings = 0
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block_to_block_type(block) is BlockType.HEADING:
+            headings += 1
+            heading = block.split("\n")[0]
+            return heading.lstrip("#").strip()
+    if headings < 1:
+        raise Exception("no heading found in markdown. Did you forget a space after the '#'?")
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path) as f:
+        md = f.read()
+    with open(template_path) as g:
+        template = g.read()
+    html = markdown_to_html_node(md).to_html()
+    title = extract_title(md)
+    template = template.replace("{{ Title }}", title)
+    template = template.replace("{{ Content }}", html)
+    directory = os.path.dirname(dest_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    with open(dest_path, 'w') as i:
+        i.write(template)
+
+def generate_page_recursive(dir_path_content, template_path, dest_dir_path):
+    contents = os.listdir(dir_path_content)
+    for item in contents:
+        from_path = os.path.join(dir_path_content, item)
+        to_path = os.path.join(dest_dir_path, item)
+        if os.path.isfile(from_path) and item.endswith(".md"):
+            to_path = Path(to_path).with_suffix(".html")
+            generate_page(from_path, template_path, to_path)
+        elif os.path.isdir(from_path):
+            generate_page_recursive(from_path, template_path, to_path)
+
+
+
